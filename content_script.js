@@ -38,15 +38,16 @@ var channel = channel || function(request, sender, sendResponse) {
       var pos = el.value.indexOf(selection.toString());
       el.value = el.value.substring(0,pos) + replacement + el.value.substring(pos+selection.toString().length);
     } else if (selection.anchorNode != selection.focusNode) {
-      if (selection.anchorOffset > 0) {
-      }
       selection.deleteFromDocument();
       var el = selection.anchorNode;
       var newText = document.createElement("span");
       newText.innerHTML = replacement.replace(/\n/g,"<br/>");
       if (el.nodeType == Node.TEXT_NODE) {
-        el.parentNode.insertBefore(newText, el);
-        el.parentNode.removeChild(el);
+        if (el.nextSibling) {
+          el.parentNode.insertBefore(newText, el.nextSibling);
+        } else {
+          el.parentNode.appendChild(newText);
+        }
       } else {
         el.appendChild(newText);
       }
