@@ -52,6 +52,16 @@ function setPath(path) {
   return plugin().set_gpg_path(path);
 }
 
+function setDisplay(display) {
+  if ((display == "note" || display == "page" || display == "clip") &&
+      localStorage["display"] != display) {
+    localStorage["display"] = display;
+  } else if (localStorage["display"] != display) {
+    localStorage.removeItem("display");
+  }
+  return localStorage["display"] || "note";
+}
+
 
 function encryptText(clear_txt) {
   if(clear_txt && clear_txt.length) {
@@ -143,10 +153,15 @@ function load()
 
 chrome.extension.onRequest.addListener(function(request, sender, sendResponse) {
   if (request.cmd == "version") {
-    path = localStorage["gpg-path"] || "";
+    var path = localStorage["gpg-path"] || "";
     sendResponse({version:version(), path:path});
   } else if (request.cmd == "setpath") {
     sendResponse({version:setPath(request.path)});
+  } else if (request.cmd == "display") {
+    var display = localStorage["display"] || "note";
+    sendResponse({display:display});
+  } else if (request.cmd == "setdisplay") {
+    sendResponse({display:setDisplay(request.display)});
   }
 });
 

@@ -1,6 +1,7 @@
 <html>
 <head>
 <script>
+var display_modes = ["clip", "note", "page"];
 
 function load()
 {
@@ -10,18 +11,49 @@ function load()
       document.getElementById("path").value = response.path;
     }
     versionNode.innerHTML = response.version;
- });
+  });
 
+
+ update_display();
+ for (mode in display_modes) {
+   var el = document.getElementById("display_" + display_modes[mode]);
+   el && el.addEventListener("change", set_display, false);
+ }
 }
 
 function set_path()
 {
   chrome.extension.sendRequest({
-      cmd:"setpath",
-      path:document.getElementById("path").value}, function(response) {
+      cmd: "setpath",
+      path: document.getElementById("path").value}, function(response) {
     var versionNode = document.getElementById("version");
     versionNode.innerHTML = response.version;
   });
+  return false;
+}
+
+function update_display()
+{
+  chrome.extension.sendRequest({
+      cmd: "display"}, function(response) {
+    var el = document.getElementById("display_" + response.display);
+    el.checked = "checked";
+  });
+}
+
+function set_display()
+{
+  var checkedmode = "note";
+  for (mode in display_modes) {
+    var el = document.getElementById("display_" + display_modes[mode]);
+    if (el && el.checked) {
+      checkedmode = display_modes[mode];
+      break;
+    }
+  }
+  chrome.extension.sendRequest({
+      cmd: "setdisplay",
+      display: checkedmode}, update_display);
   return false;
 }
 
@@ -32,11 +64,22 @@ function set_path()
 
   <h1>CryptoChrome</h1>
 
-<div>gpg version: <pre id="version"></pre></div>
+  <h2>Gpg version:</h2>
+  <pre id="version"></pre>
 
-<form onsubmit="return set_path()">
-  Path: <input type="text" id="path" placeholder="gpg" />
-  <input type="submit" value="Set" onclick="return set_path()" />
-</form>
+  <form onsubmit="return set_path()">
+    Path: <input type="text" id="path" placeholder="gpg" />
+    <input type="submit" value="Set" onclick="return set_path()" />
+  </form>
+
+  <h2>Results</h2>
+  <form onsubmit="return set_display()">
+    <input type="radio" name="display" id="display_clip" />
+    <label for="display_clip">Place on Clipboard.</label><br />
+    <input type="radio" name="display" id="display_note" />
+    <label for="display_note">Display in Notification.</label><br />
+    <input type="radio" name="display" id="display_page" />
+    <label for="display_page">Display on Page.</label>
+  </form>
 </body>
 </html>
