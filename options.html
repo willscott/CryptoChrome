@@ -18,6 +18,8 @@ function load()
  for (mode in display_modes) {
    var el = document.getElementById("display_" + display_modes[mode]);
    el && el.addEventListener("change", set_display, false);
+   el = document.getElementById("edisplay_" + display_modes[mode]);
+   el && el.addEventListener("change", set_display, false);   
  }
 }
 
@@ -38,6 +40,8 @@ function update_display()
       cmd: "display"}, function(response) {
     var el = document.getElementById("display_" + response.display);
     el.checked = "checked";
+    el = document.getElementById("edisplay_" + response.edisplay);
+    el.checked = "checked";
   });
 }
 
@@ -51,9 +55,19 @@ function set_display()
       break;
     }
   }
+  var editablemode = "page";
+  for (mode in display_modes) {
+    var el = document.getElementById("edisplay_" + display_modes[mode]);
+    if (el && el.checked) {
+      editablemode = display_modes[mode];
+      break;
+    }
+  }
+
   chrome.extension.sendRequest({
       cmd: "setdisplay",
-      display: checkedmode}, update_display);
+      display: checkedmode,
+      edisplay: editablemode}, update_display);
   return false;
 }
 
@@ -72,14 +86,23 @@ function set_display()
     <input type="submit" value="Set" onclick="return set_path()" />
   </form>
 
-  <h2>Results</h2>
+  <h2>Display</h2>
   <form onsubmit="return set_display()">
+  <fieldset><legend>Selections on the web.</legend>
     <input type="radio" name="display" id="display_clip" />
-    <label for="display_clip">Place on Clipboard.</label><br />
+    <label for="display_clip">Copy result to the clipboard.</label><br />
     <input type="radio" name="display" id="display_note" />
-    <label for="display_note">Display in Notification.</label><br />
+    <label for="display_note">Display result in desktop notification.</label><br />
     <input type="radio" name="display" id="display_page" />
-    <label for="display_page">Display on Page.</label>
-  </form>
+    <label for="display_page">Replace selection with result.</label>
+    </fieldset>
+  <fieldset><legend>Selections in an editable box.</legend>
+    <input type="radio" name="edisplay" id="edisplay_clip" />
+    <label for="edisplay_clip">Copy result to the clipboard.</label><br />
+    <input type="radio" name="edisplay" id="edisplay_note" />
+    <label for="edisplay_note">Display result in desktop notification.</label><br />
+    <input type="radio" name="edisplay" id="edisplay_page" />
+    <label for="edisplay_page">Replace selection with result.</label>
+    </fieldset>  </form>
 </body>
 </html>
