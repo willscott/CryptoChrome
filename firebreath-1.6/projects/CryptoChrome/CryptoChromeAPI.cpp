@@ -1,6 +1,6 @@
 /**********************************************************\
 
-  Auto-generated CryptoChromeAPI.cpp
+  Browser API for Crypto Chrome.
 
 \**********************************************************/
 
@@ -8,9 +8,10 @@
 #include "variant_list.h"
 #include "DOM/Document.h"
 #include "global/config.h"
-#include "stx-execpipe.h"
 #include <stdexcept>
 #include <iostream>
+
+#include "stlplus-portability/subprocesses.hpp"
 
 #include "CryptoChromeAPI.h"
 
@@ -79,23 +80,15 @@ std::string CryptoChromeAPI::get_gpg()
 // Configuration
 std::string CryptoChromeAPI::gpg_version()
 {
-    stx::ExecPipe ep;               // creates new pipe
-    
-    std::vector<std::string> gpgargs;
-    gpgargs.push_back(get_gpg());
-    gpgargs.push_back("--version");
-    ep.add_execp(&gpgargs);
+	stlplus::subprocess p;
 
-    std::string output;
-    ep.set_output_string(&output);
-    
-    try {
-        ep.run();
-    }
-    catch (std::runtime_error &e) {
-        return e.what();
-    }
+	stlplus::arg_vector args("--version");
 
+	p.spawn(get_gpg(), args, false, true, false);
+
+	std::string output;
+	p.read_stdout(output);
+    
     return output;
 }
 
@@ -110,126 +103,96 @@ std::string CryptoChromeAPI::set_gpg_path(std::string path)
 // Text Processing
 std::string CryptoChromeAPI::decrypt(std::string crypt_txt)
 {
-    stx::ExecPipe ep;               // creates new pipe
+	stlplus::subprocess p;
 
-    ep.set_input_string(&crypt_txt);
-    
-    std::vector<std::string> gpgargs;
-    gpgargs.push_back(get_gpg());
-    gpgargs.push_back("--quiet");
-    gpgargs.push_back("--no-tty"); 
-    gpgargs.push_back("--decrypt");
-    gpgargs.push_back("--use-agent");
-    gpgargs.push_back("--logger-fd");
-    gpgargs.push_back("1");
-    ep.add_execp(&gpgargs);
+	stlplus::arg_vector args;
+	args += "--quiet";
+	args += "--no-tty";
+	args += "--decrypt";
+	args += "--use-agent";
+	args += "--logger-fd";
+	args += "1";
 
-    std::string output;
-    ep.set_output_string(&output);
-    
+	p.spawn(get_gpg(), args, true, true, false);
+	p.write_stdin(crypt_txt);
+	p.close_stdin();
 
-    try {
-        ep.run();
-    }
-    catch (std::runtime_error &e) {
-        return e.what();
-    }
+	std::string output;
+	p.read_stdout(output);
 
-    return output;
+	return output;
 }
 
 std::string CryptoChromeAPI::encrypt(std::string recipient, std::string clear_txt)
 {
-    stx::ExecPipe ep;
+	stlplus::subprocess p;
 
-    ep.set_input_string(&clear_txt);
+	stlplus::arg_vector args;
+	args += "--quiet";
+	args += "--no-tty";
+	args += "--encrypt";
+	args += "--always-trust"; // TODO: remove this.
+	args += "--armor";
+	args += "--logger-fd";
+	args += "1";
+	args += "--recipient";
+	args += recipient;
 
-    std::vector<std::string> gpgargs;
-    gpgargs.push_back(get_gpg());
-    gpgargs.push_back("--encrypt");
-    gpgargs.push_back("--quiet");
-    gpgargs.push_back("--no-tty"); 
-    gpgargs.push_back("--always-trust");    // maybe remove this?
-    gpgargs.push_back("--armor");
-    gpgargs.push_back("--logger-fd");
-    gpgargs.push_back("1");
-    gpgargs.push_back("--recipient");
-    gpgargs.push_back(recipient);   // email of the recipient
-    ep.add_execp(&gpgargs);
+	p.spawn(get_gpg(), args, true, true, false);
+	p.write_stdin(clear_txt);
+	p.close_stdin();
 
-    std::string output;
-    ep.set_output_string(&output);
+	std::string output;
+	p.read_stdout(output);
 
-    try {
-        ep.run();
-    }
-    catch (std::runtime_error &e) {
-        return e.what();
-    }
-
-    return output;
+	return output;
 }
 
 std::string CryptoChromeAPI::clearsign(std::string clear_txt)
 {
-    stx::ExecPipe ep;
+	stlplus::subprocess p;
 
-    ep.set_input_string(&clear_txt);
+	stlplus::arg_vector args;
+	args += "--quiet";
+	args += "--no-tty";
+	args += "--clearsign";
+	args += "--armor";
+	args += "--logger-fd";
+	args += "1";
 
-    std::vector<std::string> gpgargs;
-    gpgargs.push_back(get_gpg());
-    gpgargs.push_back("--clearsign");
-    gpgargs.push_back("--quiet");
-    gpgargs.push_back("--no-tty"); 
-    gpgargs.push_back("--armor");
-    gpgargs.push_back("--logger-fd");
-    gpgargs.push_back("1");
-    ep.add_execp(&gpgargs);
+	p.spawn(get_gpg(), args, true, true, false);
+	p.write_stdin(clear_txt);
+	p.close_stdin();
 
-    std::string output;
-    ep.set_output_string(&output);
+	std::string output;
+	p.read_stdout(output);
 
-    try {
-        ep.run();
-    }
-    catch (std::runtime_error &e) {
-        return e.what();
-    }
-
-    return output;
+	return output;
 }
 
 
 std::string CryptoChromeAPI::encrypt_sign(std::string recipient, std::string clear_txt)
 {
-    stx::ExecPipe ep;
+	stlplus::subprocess p;
 
-    ep.set_input_string(&clear_txt);
+	stlplus::arg_vector args;
+	args += "--quiet";
+	args += "--no-tty";
+	args += "--encrypt";
+	args += "--sign";
+	args += "--always-trust"; // TODO: remove this.
+	args += "--armor";
+	args += "--logger-fd";
+	args += "1";
+	args += "--recipient";
+	args += recipient;
 
-    std::vector<std::string> gpgargs;
-    gpgargs.push_back(get_gpg());
-    gpgargs.push_back("--encrypt");
-    gpgargs.push_back("--sign");
-    gpgargs.push_back("--quiet");
-    gpgargs.push_back("--no-tty"); 
-    gpgargs.push_back("--always-trust");    // maybe remove this?
-    gpgargs.push_back("--armor");
-    gpgargs.push_back("--logger-fd");
-    gpgargs.push_back("1");
-    gpgargs.push_back("--recipient");
-    gpgargs.push_back(recipient);   // email of the recipient
-    ep.add_execp(&gpgargs);
+	p.spawn(get_gpg(), args, true, true, false);
+	p.write_stdin(clear_txt);
+	p.close_stdin();
 
-    std::string output;
-    ep.set_output_string(&output);
+	std::string output;
+	p.read_stdout(output);
 
-    try {
-        ep.run();
-    }
-    catch (std::runtime_error &e) {
-        return e.what();
-    }
-
-    return output;
-
+	return output;
 }
