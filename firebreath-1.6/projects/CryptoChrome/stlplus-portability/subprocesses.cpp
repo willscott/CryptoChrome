@@ -27,7 +27,13 @@
 LPTCH WINAPI GetEnvironmentStringsA(void);
 #endif
 #else
+#ifdef __APPLE__
+#include <crt_externs.h>
+char*** envPtr = _NSGetEnviron();
+char** environ = *envPtr;
+#else
 extern char** environ;
+#endif
 #include <signal.h>
 #include <errno.h>
 #include <sys/wait.h>

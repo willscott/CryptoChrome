@@ -18,6 +18,11 @@ file (GLOB GENERAL RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
 
 include_directories(${PLUGIN_INCLUDE_DIRS})
 
+file (GLOB STLPLUS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
+    stlplus-portability/*.cpp
+    stlplus-portability/*.h
+    )
+
 # Generated files are stored in ${GENERATED} by the project configuration
 SET_SOURCE_FILES_PROPERTIES(
     ${GENERATED}
@@ -30,6 +35,7 @@ SOURCE_GROUP(Generated FILES
     )
 
 SET( SOURCES
+    ${STLPLUS}
     ${GENERAL}
     ${GENERATED}
     )
