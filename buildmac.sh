@@ -15,7 +15,5 @@ cd firebreath-1.6/build
 make -j 4
 cd ../..
 cp -r firebreath-1.6/build/projects/CryptoChrome/CryptoChrome.plugin .
-if [ ! -f npCryptoChrome.so ];
-then
-	touch npCryptoChrome.so
-fi
+touch npCryptoChrome.so
+touch npCryptoChrome.dll

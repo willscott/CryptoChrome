@@ -10,7 +10,8 @@
 
   "plugins": [
     { "path": "CryptoChrome.plugin"},
-    { "path": "npCryptoChrome.so"}
+    { "path": "npCryptoChrome.so"},
+    { "path": "npCryptoChrome.dll"}
   ],
 
   "options_page": "options.html",
