@@ -17,6 +17,11 @@
   "options_page": "options.html",
 
   "permissions": [
-    "tabs", "contextMenus", "<all_urls>", "clipboardRead", "clipboardWrite"
+    "tabs",
+    "contextMenus",
+    "<all_urls>",
+    "clipboardRead",
+    "clipboardWrite",
+    "notifications"
   ]
 }

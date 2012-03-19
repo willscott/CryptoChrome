@@ -7,6 +7,7 @@ function plugin0() {
 }
 
 plugin = plugin0;
+var activeResponse;
 
 function saveToClipboard(text) {
   // now save it to clipboard
@@ -25,6 +26,12 @@ function readClipboard() {
   textarea.select();
   document.execCommand("paste", false, null);
   return textarea.value;
+}
+
+function displayNotification(text) {
+  activeResponse = text;
+  var notification = webkitNotifications.createHTMLNotification("note.html");
+  notification.show();
 }
 
 function replaceText(tab_id, next_txt) {
@@ -62,6 +69,16 @@ function setDisplay(display) {
   return localStorage["display"] || "note";
 }
 
+function setEDisplay(display) {
+  if ((display == "note" || display == "page" || display == "clip") &&
+      localStorage["edisplay"] != display) {
+    localStorage["edisplay"] = display;
+  } else if (localStorage["edisplay"] != display) {
+    localStorage.removeItem("edisplay");
+  }
+  return localStorage["edisplay"] || "page";
+}
+
 
 function encryptText(clear_txt) {
   if(clear_txt && clear_txt.length) {
@@ -93,8 +110,21 @@ function encryptSignText (clear_txt) {
   return "";
 }
 
-function withTabSelection (tab, processor, replace) {
-  responseHandler = replace ? replaceText.bind(null, tab.id) : saveToClipboard;
+function getResponseHandler(tab, editable) {
+  var display = editable ? localStorage["edisplay"] || "page" : localStorage["display"] || "note";
+  if (display == "clip") {
+    return saveToClipboard;
+  } else if (display == "note") {
+    return displayNotification;
+  } else if (display == "page") {
+    return replaceText.bind(null, tab.id);
+  } else {
+    console.log("Don't know what to do with display mode: " + display);
+  }
+}
+
+function withTabSelection (tab, processor, editable) {
+  var responseHandler = getResponseHandler(tab, editable);
 
   chrome.tabs.executeScript(tab.id, {"file": "content_script.js", "allFrames": true}, function() {
     chrome.tabs.sendRequest(tab.id, {cmd: "get_selected"}, function(response) {
@@ -105,10 +135,10 @@ function withTabSelection (tab, processor, replace) {
 
 function withClipboard(tab, processor) {
   text = readClipboard();
+  var responseHandler = getResponseHandler(tab, 0);
   
   chrome.tabs.executeScript(tab.id, {"file": "content_script.js"}, function() {
-    var processed = processor(text);
-    replaceText(tab.id, processed);
+    responseHandler(processor(text));
   });
 }
 
@@ -159,9 +189,14 @@ chrome.extension.onRequest.addListener(function(request, sender, sendResponse) {
     sendResponse({version:setPath(request.path)});
   } else if (request.cmd == "display") {
     var display = localStorage["display"] || "note";
-    sendResponse({display:display});
+    var edisplay = localStorage["edisplay"] || "page";
+    sendResponse({display:display, edisplay:edisplay});
   } else if (request.cmd == "setdisplay") {
-    sendResponse({display:setDisplay(request.display)});
+    sendResponse({display:setDisplay(request.display),
+                  edisplay:setEDisplay(request.edisplay)});
+  } else if (request.cmd == "getnote") {
+    sendResponse({text:activeResponse});
+    activeResponse = "";
   }
 });
 

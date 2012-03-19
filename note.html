@@ -1,0 +1,19 @@
+<html>
+<head>
+<script>
+window.onload = function() {
+  document.getElementById("logo").src = chrome.extension.getURL("gnupg.jpg");
+  chrome.extension.sendRequest({cmd:"getnote"}, function(response) {
+    document.getElementById("output").innerHTML = response.text;
+  });
+}
+</script>
+
+</head>
+<body>
+<img id="logo" alt="GPG" style="float:left" width="32" height="32" />
+<pre id="output">
+Output goes here.
+</pre>
+</body>
+</html>
