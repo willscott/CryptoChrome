@@ -1,7 +1,3 @@
-<html>
-<head>
-<script>
-
 function plugin0() {
   return document.getElementById('plugin');
 }
@@ -142,8 +138,11 @@ function withClipboard(tab, processor) {
   });
 }
 
-function load()
+window.onload = function()
 {
+  document.body.innerHTML = "<embed id='plugin' type='application/x-cryptochrome'></embed><textarea id='tmp-clipboard'></textarea>";
+  
+  
   // load path from storage
   var path = localStorage["gpg-path"];
   if(path != undefined)
@@ -199,14 +198,3 @@ chrome.extension.onRequest.addListener(function(request, sender, sendResponse) {
     activeResponse = "";
   }
 });
-
-</script>
-
-</head>
-<body onload="load()">
-
-<embed id="plugin" type="application/x-cryptochrome"></embed>
-<textarea id="tmp-clipboard"></textarea>
-
-</body>
-</html>

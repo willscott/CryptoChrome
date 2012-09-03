@@ -5,7 +5,7 @@ var display_modes = ["clip", "note", "page"];
 
 function load()
 {
-  chrome.extension.sendRequest({cmd:"version"}, function(response) {
+  chrome.extension.sendRequest({cmd: "version"}, function(response) {
     var versionNode = document.getElementById("version");
     if(response.path != undefined) {
       document.getElementById("path").value = response.path;
